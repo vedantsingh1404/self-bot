@@ -1,5 +1,9 @@
 //jshint esversion: 6
 
+process.on('unhandledRejection', error => {
+	console.error(error.stack);
+});
+
 const discord = require('discord.js');
 var fs = require('fs');
 const auth = require('./auth.json');
@@ -78,7 +82,7 @@ client.on('guildBanRemove', (guild, user) => {
 });
 client.on('guildMemberAdd', (member) => {
   log.guild(`${member.user.id}/${member.user.tag} has joined the guild.`, member.guild);
-  member.send(`Welcome to ${member.guild.name}. Message 'pls help' for the list of commands.`);
+  // member.send(`Welcome to ${member.guild.name}. Message 'pls help' for the list of commands.`);
 });
 client.on('guildMemberAvailable', (member) => {
   log.guild(`${member.user.id}/${member.user.tag} is now available in the guild.`, member.guild);
@@ -153,12 +157,171 @@ client.on('userUpdate', (oldUser, newUser) => {
 });
 
 
-// commands to be added
+// commands
 
 client.on('message', (message) => {
   if (!message.guild) return;
 
-  if (message.content.startsWith('pls')) {
+  var args = message.content.split(' ');
 
+  if (message.content.toLowerCase().startsWith('pls')) {
+    cmd = args[1].toLowerCase();
+    switch(cmd) {
+
+      case 'kick' :
+        const userk = message.mentions.users.first();
+        if(userk) {
+          const memberk = message.guild.member(userk);
+
+          if(message.member.hasPermission('KICK_MEMBERS')) {
+            memberk.kick()
+              .then(() => {
+                message.reply(`Succesfully kicked ${userk.tag}`);
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          } else {
+            message.reply(`You don't have the permission to kick members.`);
+          }
+        } else {
+          message.reply(`You didn't mention the user to kick.`);
+        }
+        break;
+
+      case 'ban' :
+
+        number_days = args[4];
+
+        const userb = message.mentions.users.first();
+        if(userb) {
+          const memberb = message.guild.member(userb);
+
+          if(message.member.hasPermission('BAN_MEMBERS')) {
+            memberb.ban(number_days)
+              .then(() => {
+                message.reply(`Succesfully banned ${userb.tag}`);
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          } else {
+            message.reply(`You don't have the permission to ban members.`);
+          }
+        } else {
+          message.reply(`You didn't mention the user to ban.`);
+        }
+        break;
+
+      case 'mute' :
+
+        const userm = message.mentions.users.first();
+        if(userm) {
+          const memberm = message.guild.member(userm);
+          if(message.member.hasPermission('MUTE_MEMBERS')) {
+            memberm.setMute('true')
+                .then(() => {
+                  message.reply(`Succesfully muted ${userm.tag}`);
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+          } else {
+            message.reply(`You don't have the required permissions.`);
+          }
+
+        } else {
+          message.member.setMute('true')
+            .then(() => {
+              message.reply(`Your mic is now muted.`);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+        break;
+
+      case 'unmute' :
+        const useru = message.mentions.users.first();
+        if(useru) {
+          const memberu = message.guild.member(useru);
+          if(message.member.hasPermission('MUTE_MEMBERS')) {
+            memberu.setMute('false')
+                .then(() => {
+                  message.reply(`Succesfully unmuted ${useru.tag}`);
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+          } else {
+            message.reply(`You don't have the required permissions.`);
+          }
+        } else {
+          message.member.setMute('false')
+            .then(() => {
+              message.reply(`Your mic is now unmuted.`);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+        break;
+
+      case 'deaf' :
+        const userd = message.mentions.users.first();
+        if(userd) {
+          const memberd = message.guild.member(userd);
+          if(message.member.hasPermission('DEAFEN_MEMBERS')) {
+            memberd.setDeaf('true')
+                .then(() => {
+                  message.reply(`Succesfully deafened ${userd.tag}`);
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+          } else {
+            message.reply(`You don't have the required permissions.`);
+          }
+
+        } else {
+          message.member.setDeaf('true')
+            .then(() => {
+              message.reply(`You have been deafened.`);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+        break;
+
+      case 'undeaf' :
+        const userud = message.mentions.users.first();
+        if(userud) {
+          const memberud = message.guild.member(userud);
+          if(message.member.hasPermission('DEAFEN_MEMBERS')) {
+            memberud.setDeaf('false')
+                .then(() => {
+                  message.reply(`Succesfully undeafened ${userud.tag}`);
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+          } else {
+            message.reply(`You don't have the required permissions.`);
+          }
+
+        } else {
+          message.member.setDeaf('false')
+            .then(() => {
+              message.reply(`You have been undeafened.`);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+        break;
+
+
+    }
   }
 });
